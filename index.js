@@ -1,16 +1,3 @@
-/*
-
-This is how an item object should look like
-
-{
-  id: 1, // <- the item id matches the icon name in the assets/icons folder
-  name: "beetroot",
-  price: 0.35 // <- You can come up with your own prices
-}
-
-*/
-
-
 const storeList = document.querySelector('.item-list.store--item-list')
 const cartList = document.querySelector('.item-list.cart--item-list')
 const totalEl = document.querySelector('.total-number')
@@ -98,12 +85,14 @@ function getTotal() {
   return total
 }
 
-// <li>
-// <div class="store--item-icon">
-//  <img src="assets/icons/001-beetroot.svg" alt="beetroot" />
-// </div>
-// <button>Add to cart</button>
-// </li>
+function addItemToCart(item) {
+  item.amountInCart++
+}
+
+function removeItemFromCart(item) {
+  if(item.amountInCart > 0)  item.amountInCart--
+}
+
 
 function renderStoreItem(storeItem) {
   const liEl = document.createElement("li")
@@ -120,12 +109,15 @@ function renderStoreItem(storeItem) {
 
   const buttonEl = document.createElement("button")
   buttonEl.textContent = 'Add to cart'
+  buttonEl.addEventListener("click", function () {
+    addItemToCart(storeItem)
+    render()
+  })
 
   liEl.append(divEl, buttonEl)
   // @ts-ignore
   storeList.append(liEl)
 }
-
 
 
 function renderStore() {
@@ -140,36 +132,66 @@ function renderStore() {
 }
 
 
-function renderCart() {
-  const cart = getCart()
+function renderCartItem(cartItem) {
+  const liEl = document.createElement('li')
 
-  //<li>
-  //<img
-    //class="cart--item-icon"
-    //src="assets/icons/001-beetroot.svg"
-    //alt="beetroot"
-  ///>
-  //<p>beetroot</p>
-  //<button class="quantity-btn remove-btn center">-</button>
-  //<span class="quantity-text center">1</span>
-  //<button class="quantity-btn add-btn center">+</button>
-//</li>
-
-const liEl = document.createElement('li')
 const imgEl = document.createElement('img')
+imgEl.setAttribute("class", "cart--item-icon")
+const imgId = cartItem.id.toString().padStart(3, "0")
+imgEl.setAttribute("src", `/assets/icons/${imgId}-${cartItem.name}.svg`)
+imgEl.setAttribute("alt", cartItem.name)
+
 const nameEl = document.createElement('p')
+nameEl.textContent = cartItem.name
+
 const minusButtonEl = document.createElement('button')
+minusButtonEl.setAttribute('class', "quantity-btn remove-btn center" )
+minusButtonEl.textContent = '-'
+minusButtonEl.addEventListener("click", function () {
+  removeItemFromCart(cartItem)
+  render()
+})
+
 const quantityEl = document.createElement('span')
+quantityEl.setAttribute("class", "quantity-text center")
+// @ts-ignore
+quantityEl.textContent = cartItem.amountInCart
+
 const plusButtonEl = document.createElement('button')
+plusButtonEl.setAttribute('class', "quantity-btn add-btn center")
+plusButtonEl.textContent = '+'
+plusButtonEl.addEventListener("click", function () {
+  addItemToCart(cartItem)
+  render()
+})
+
+liEl.append(imgEl, nameEl, minusButtonEl, quantityEl, plusButtonEl)
+
+// @ts-ignore
+cartList.append(liEl)
+}
+
+function renderCart() {
+
+  // @ts-ignore
+  cartList.innerHTML = ''
+
+  const cart = getCart()
+  for (const cartItem of cart) {
+   renderCartItem(cartItem)
+   }
 }
 
 
 function renderTotal() {
-
+   // @ts-ignore
+   totalEl.textContent = '£' + getTotal().toFixed(2)
 }
 
 function render() {
   renderStore()
+  renderCart()
+  renderTotal()
 }
 
 render()
